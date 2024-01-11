@@ -5,7 +5,7 @@ on:
 name: Build APK exe ipa linuxBin
 jobs:
   build_ios:
-    name: Build ipa
+    name: build_ios
     runs-on: macos-latest
     permissions:
       contents: write
@@ -21,7 +21,8 @@ jobs:
     - run: flutter pub get
     - run: flutter build ios --release --no-codesign --no-tree-shake-icons
     - run: mkdir build/ios/iphoneos/Payload
-    - run: cp -r --parents build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+    #- run: cp -r --parents build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+    - run: ditto build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/Runner.app
     - run: zip -r -9 build/ios/iphoneos/ios-no-codesign.app.zip build/ios/iphoneos/Payload/
     - run: mv build/ios/iphoneos/ios-no-codesign.app.zip build/ios/iphoneos/ios-no-codesign.ipa
     - name: upload IPA
@@ -31,7 +32,7 @@ jobs:
         path: build/ios/iphoneos/ios-no-codesign.ipa
 
   build_win:
-    name: Build exe
+    name: build_win
     runs-on: windows-latest
     permissions:
       contents: write
@@ -93,7 +94,10 @@ jobs:
         flutter-version: '3.16.5'
     - run: |
         sudo apt-get update -y
-        sudo apt-get install -y ninja-build libgtk-3-dev
+        sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+        sudo apt-get install -y libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+        sudo apt-get install -y gstreamer1.0-plugins-good gstreamer1.0-plugins-bad
+
     - run: flutter config --enable-linux-desktop
     - run: flutter pub get
     - run: flutter build linux --no-tree-shake-icons
