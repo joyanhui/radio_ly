@@ -112,14 +112,15 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
       - name: Display structure of downloaded files
-        run: ls -R
+        run: ls -R && mv ./apk/app-release.apk ./apk/android.apk
       - name: Publish
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # /settings/actions Workflow permissions
         with:
               files: |
-                *.ipa
-                *.zip
-                *.apk
+                ./ipa/ios-no-codesign.ipa
+                ./exe/windows_x64_runner.zip
+                ./apk/android.apk
+                ./linux/linux_x64_bundle.zip
               prerelease: false
