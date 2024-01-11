@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wakelock/wakelock.dart';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:url_launcher/url_launcher.dart'; // 导入 url_launcher 包
@@ -87,6 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var source4 = "";
   final TextEditingController customController = TextEditingController();
   Future<SharedPreferences> prefs = SharedPreferences.getInstance();
+  bool AutoScreenLock = false; // 播放时候是允许熄屏
 
   var isPlaying = false;
   String? selectedSource;
@@ -103,12 +105,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> initPage() async {
     final prefsInstance = await prefs;
     source4 = prefsInstance.getString("source4") ?? "";
+    AutoScreenLock = prefsInstance.getBool("preventScreenLock") ?? false;
   }
 
   @override
   void dispose() {
-    player.stop(); // 停止播放
     super.dispose();
+    player.stop(); // 停止播放
   }
 
   @override
@@ -120,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const SizedBox(
-              height: 20,
+              height: 50,
             ),
             ElevatedButton(
               onPressed: () async {
@@ -128,32 +131,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   setState(() {
                     isPlaying = false;
                   });
-                  try {
-                    player.stop();
-                  } catch (e) {
-                    showCupertinoDialog(
-                      context: context,
-                      builder: (context) {
-                        return CupertinoAlertDialog(
-                          title: const Text('提示'),
-                          content: Text('停止错误 ${e.toString()}'),
-                          actions: <Widget>[
-                            CupertinoDialogAction(
-                              child: const Text('确定'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
+                  await _stop(context);
                 } else {
                   setState(() {
                     isPlaying = true;
                   });
-                  _play(selectedSource!);
+                  _play(selectedSource!, context);
                 }
               },
               child: isPlaying
@@ -168,9 +151,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   selectedSource = value;
                 });
-                //切换源
                 if (isPlaying) {
-                  _play(selectedSource!);
+                  await _play(selectedSource!, context);
                 }
               },
             ),
@@ -182,9 +164,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   selectedSource = value;
                 });
-                //切换源
                 if (isPlaying) {
-                  _play(selectedSource!);
+                  await _play(selectedSource!, context);
                 }
               },
             ),
@@ -196,9 +177,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   selectedSource = value;
                 });
-                //切换源
                 if (isPlaying) {
-                  _play(selectedSource!);
+                  await _play(selectedSource!, context);
                 }
               },
             ),
@@ -231,9 +211,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   selectedSource = value;
                 });
-                //切换源
                 if (isPlaying) {
-                  _play(selectedSource!);
+                  await _play(selectedSource!, context);
                 }
               },
             ),
@@ -327,6 +306,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const Text("配置自定义源"),
               ),
             ),
+            SwitchListTile(
+              title: const Text('自动熄屏'),
+              value: AutoScreenLock,
+              onChanged: (bool value) async {
+                setState(() {
+                  AutoScreenLock = value;
+                });
+                //写入到缓存
+                //写入到缓存
+                final prefsInstance = await prefs;
+                prefsInstance.setBool("preventScreenLock", AutoScreenLock);
+              },
+            ),
             const SizedBox(
               height: 20,
             ),
@@ -389,12 +381,42 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {}
   }
 
-  void _play(String url) async {
+  Future _stop(BuildContext context) async {
     try {
-      player.stop();
-      player.play(UrlSource(url));
+      await player.stop();
+      Wakelock.disable(); //允许熄屏
     } catch (e) {
-      showCupertinoDialog(
+      await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: const Text('提示'),
+            content: Text('停止错误 ${e.toString()}'),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text('确定'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  Future _play(String url, BuildContext context) async {
+    try {
+      if (isPlaying) {
+        await player.stop();
+      }
+      await player.play(UrlSource(selectedSource!));
+      if (!AutoScreenLock) {
+        Wakelock.enable(); // 根据设置决定是否禁止熄屏
+      }
+    } catch (e) {
+      await showCupertinoDialog(
         context: context,
         builder: (context) {
           return CupertinoAlertDialog(

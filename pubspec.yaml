@@ -14,7 +14,7 @@ dependencies:
   flutter_launcher_icons: "^0.13.1"
   url_launcher: ^6.2.2
   shared_preferences: ^2.2.2
-
+  wakelock: ^0.6.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
