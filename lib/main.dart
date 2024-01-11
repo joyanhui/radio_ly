@@ -307,13 +307,17 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             SwitchListTile(
-              title: const Text('自动熄屏'),
+              title: const Text('播放时自动熄屏'),
               value: AutoScreenLock,
               onChanged: (bool value) async {
                 setState(() {
                   AutoScreenLock = value;
                 });
-                //写入到缓存
+                if (AutoScreenLock) {
+                  Wakelock.disable();
+                } else {
+                  Wakelock.enable();
+                }
                 //写入到缓存
                 final prefsInstance = await prefs;
                 prefsInstance.setBool("preventScreenLock", AutoScreenLock);
