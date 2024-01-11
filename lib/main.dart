@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -347,7 +349,8 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(
                 width: 250,
                 child: GestureDetector(
-                  onTap: _launchURL,
+                  onTap: () => _launchURL(
+                      url: "https://dev.leiyanhui.com/new/radio-ly/"),
                   child: const Text(
                     "部分源可能被监管者屏蔽，你可能需要加密上网才能使用",
                     style: TextStyle(
@@ -361,9 +364,25 @@ class _MyHomePageState extends State<MyHomePage> {
             SizedBox(
                 width: 250,
                 child: GestureDetector(
-                  onTap: _launchURL,
+                  onTap: () => _launchURL(
+                      url: "https://dev.leiyanhui.com/new/radio-ly/"),
                   child: const Text(
                     "主页: https://dev.leiyanhui.com/",
+                    style: TextStyle(
+                      color: Color.fromARGB(255, 42, 96, 139),
+                    ),
+                  ),
+                )),
+            const SizedBox(
+              height: 20,
+            ),
+            SizedBox(
+                width: 250,
+                child: GestureDetector(
+                  onTap: () => _launchURL(
+                      url: "https://github.com/joyanhui/radio_ly/releases"),
+                  child: const Text(
+                    "检查新版",
                     style: TextStyle(
                       color: Color.fromARGB(255, 42, 96, 139),
                     ),
@@ -378,8 +397,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _launchURL() async {
-    const url = 'https://dev.leiyanhui.com/new/radio-ly/';
+  Future _launchURL({required String url}) async {
     if (await canLaunchUrl(Uri.parse(url))) {
       await launchUrl(Uri.parse(url)); // 使用 launchUrl
     } else {}
