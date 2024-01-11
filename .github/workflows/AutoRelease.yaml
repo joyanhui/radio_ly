@@ -114,10 +114,12 @@ jobs:
         uses: actions/download-artifact@v2
       - name: Publish
         uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # /settings/actions Workflow permissions
         with:
               files: |
-                ipa/*.ipa
-                exe/*.zip
-                apk/*.apk
-                linux/*.zip
+                *.ipa
+                *.zip
+                *.apk
+                *.zip
               prerelease: false
