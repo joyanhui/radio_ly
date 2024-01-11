@@ -1,0 +1,26 @@
+on:
+    workflow_dispatch:
+name: Build windows x64 
+jobs:
+    build:
+      runs-on: windows-latest
+      permissions:
+        contents: write
+        discussions: write
+      steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '17.x'
+      - uses: subosito/flutter-action@v1
+        with:
+            flutter-version: '3.16.5'
+      - run: flutter config --enable-windows-desktop
+      - run: flutter pub get
+      - run: flutter build windows
+      - run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath build\windows\x64\runner\windows_x64_runner.zip
+      - name: upload
+        uses: actions/upload-artifact@v4
+        with:
+            name: my-exe
+            path: build\windows\x64\runner\windows_x64_runner.zip

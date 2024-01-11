@@ -1,0 +1,29 @@
+on:
+    workflow_dispatch:
+name: Build macos x64 And Arm
+jobs:
+  build:
+    name: Build
+    runs-on:  macos-latest
+    permissions:
+        contents: write
+        discussions: write
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '17.x'
+    - uses: subosito/flutter-action@v1
+      with:
+        flutter-version: '3.16.5'
+        architecture: x64
+    - run: flutter config --enable-macos-desktop
+    - run: flutter pub get
+    - run: flutter build macos --no-tree-shake-icons 
+    #build/linux/x64/release/bundle/
+    - run:  zip -r -9  build/linux/x64/release/linux_x64_bundle.zip build/linux/x64/release/bundle
+    - name: Publish
+      uses: ncipollo/release-action@v1.5.0
+      with:
+        artifacts: 'build/linux/x64/release/linux_x64_bundle.zip'
+        token: ${{ secrets.GITHUB_RElEASE_TOKEN }}
