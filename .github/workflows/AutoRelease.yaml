@@ -110,24 +110,9 @@ jobs:
     needs: [build_ios, build_win, build_apk,build_linux]
     runs-on: ubuntu-latest
     steps:
-      - name: download IPA
-        uses: actions/download-artifact@v2
-        with:
-          name: ipa
-      - name: download EXE
-        uses: actions/download-artifact@v2
-        with:
-          name: exe
-      - name: download APK
-        uses: actions/download-artifact@v2
-        with:
-          name: apk
-      - name: download Linux
-        uses: actions/download-artifact@v2
-        with:
-          name: linux
-      - name: download artifacts
-        uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4
+      - name: Display structure of downloaded files
+        run: ls -R
       - name: Publish
         uses: softprops/action-gh-release@v1
         env:
