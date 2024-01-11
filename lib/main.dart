@@ -1,5 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 
@@ -313,10 +315,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 setState(() {
                   AutoScreenLock = value;
                 });
-                if (AutoScreenLock) {
+                if (AutoScreenLock &&
+                    (Theme.of(context).platform == TargetPlatform.android ||
+                        Theme.of(context).platform == TargetPlatform.iOS)) {
                   Wakelock.disable();
                 } else {
-                  Wakelock.enable();
+                  if ((Theme.of(context).platform == TargetPlatform.android ||
+                      Theme.of(context).platform == TargetPlatform.iOS)) {
+                    Wakelock.enable();
+                  }
                 }
                 //写入到缓存
                 final prefsInstance = await prefs;
@@ -328,8 +335,37 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             SizedBox(
               width: 250,
-              child: Text(
-                  isPlaying ? "▶ 地址:$selectedSource" : "〓 地址:$selectedSource"),
+              child: RichText(
+                text: TextSpan(
+                  children: <TextSpan>[
+                    if (isPlaying)
+                      const TextSpan(
+                        text: "▶",
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 13, 150, 1),
+                        ),
+                      ),
+                    if (!isPlaying)
+                      const TextSpan(
+                        text: "〓",
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 245, 159, 0),
+                        ),
+                      ),
+                    TextSpan(
+                      text: "地址:$selectedSource",
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 245, 159, 0),
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          Clipboard.setData(
+                              ClipboardData(text: selectedSource!));
+                        },
+                    )
+                  ],
+                ),
+              ),
             ),
             const SizedBox(
               height: 20,
@@ -404,7 +440,10 @@ class _MyHomePageState extends State<MyHomePage> {
   Future _stop(BuildContext context) async {
     try {
       await player.stop();
-      Wakelock.disable(); //允许熄屏
+      if (Theme.of(context).platform == TargetPlatform.android ||
+          Theme.of(context).platform == TargetPlatform.iOS) {
+        Wakelock.disable(); //允许熄屏
+      }
     } catch (e) {
       await showCupertinoDialog(
         context: context,
@@ -432,7 +471,9 @@ class _MyHomePageState extends State<MyHomePage> {
         await player.stop();
       }
       await player.play(UrlSource(selectedSource!));
-      if (!AutoScreenLock) {
+      if (!AutoScreenLock &&
+          (Theme.of(context).platform == TargetPlatform.android ||
+              Theme.of(context).platform == TargetPlatform.iOS)) {
         Wakelock.enable(); // 根据设置决定是否禁止熄屏
       }
     } catch (e) {
