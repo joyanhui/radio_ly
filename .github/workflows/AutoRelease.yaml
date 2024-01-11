@@ -54,7 +54,6 @@ jobs:
       with:
         name: exe
         path: build/windows/x64/runner/windows_x64_runner.zip
-
   build_apk:
     name: build_apk
     runs-on: ubuntu-latest
@@ -77,7 +76,6 @@ jobs:
       with:
         name: apk
         path: build/app/outputs/apk/release/*.apk
-
   build_linux:
     name: build_linux
     runs-on: ubuntu-latest
@@ -112,15 +110,15 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
       - name: Display structure of downloaded files
-        run: ls -R && mv ./apk/app-release.apk ./apk/android.apk
+        run: ls -R && mv ./apk/app-release.apk ./apk/android.apk  && ls -R
       - name: Publish
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # /settings/actions Workflow permissions
         with:
-              files: |
-                ./ipa/ios-no-codesign.ipa
-                ./exe/windows_x64_runner.zip
-                ./apk/android.apk
-                ./linux/linux_x64_bundle.zip
-              prerelease: false
+          files: |
+            ./ipa/ios-no-codesign.ipa
+            ./exe/windows_x64_runner.zip
+            ./apk/android.apk
+            ./linux/linux_x64_bundle.zip
+          prerelease: false
