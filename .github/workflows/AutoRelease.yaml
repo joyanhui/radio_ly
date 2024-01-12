@@ -1,8 +1,8 @@
 on:
   push:
     tags:
-      - "v*" #git tag v0.0.4&&git push --tag
-name: Build APK exe ipa linuxBin
+      - "v*" #git tag v0.0.4&&git push --tag    # git tag -l | xargs git tag -d  # git ls-remote --tags origin | awk '{print ":" $2}' | xargs git push origin
+name: AutoRelease
 jobs:
   build_ios:
     name: build_ios
